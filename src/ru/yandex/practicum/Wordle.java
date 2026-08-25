@@ -9,10 +9,73 @@ package ru.yandex.practicum;
     вызвать игровой метод в котором в цикле опрашивать пользователя и передавать информацию в игру
     вывести состояние игры и конечный результат
  */
+import ru.yandex.practicum.exceptions.GameException;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.Scanner;
+
 public class Wordle {
 
     public static void main(String[] args) {
+        String logFileName = "wordle.log";
+        String dictFileName = "words_ru.txt";
 
+        try (PrintWriter log = new PrintWriter(new FileWriter(logFileName, StandardCharsets.UTF_8, true), true)) {
+            log.println("=== Запуск новой сессии Wordle ===");
+
+            WordleDictionary dictionary;
+            try {
+                dictionary = WordleDictionaryLoader.load(dictFileName, log);
+            } catch (IOException e) {
+                System.out.println("Критическая ошибка: Не удалось загрузить файл словаря '" + dictFileName + "'.");
+                return;
+            }
+
+            WordleGame game = new WordleGame(dictionary, log);
+            playGame(game, new Scanner(System.in));
+
+        } catch (Exception e) {
+            System.out.println("Произошла непредвиденная системная ошибка. Подробности записаны в лог.");
+            e.printStackTrace();
+        }
     }
 
+    private static void playGame(WordleGame game, Scanner scanner) {
+        System.out.println("Добро пожаловать в игру Wordle (5 букв)!");
+        System.out.println("Обозначения: [+] — буква на месте, [^] — буква есть в слове, [-] — буквы нет.");
+        System.out.println("Нажмите Enter на пустой строке, если хотите получить подсказку от компьютера.\n");
+
+        while (!game.isGameOver()) {
+            System.out.printf("Попытка (%d/%d). Введите слово: ",
+                    (WordleGame.MAX_STEPS - game.getRemainingSteps() + 1), WordleGame.MAX_STEPS);
+            String input = scanner.nextLine().trim();
+
+            if (input.isEmpty()) {
+                String hint = game.getHint();
+                System.out.println("Подсказка от компьютера: " + hint);
+                continue;
+            }
+
+            try {
+                String clue = game.makeGuess(input);
+                System.out.println("> " + input.toLowerCase().replace('ё', 'е'));
+                System.out.println("> " + clue);
+                System.out.println();
+            } catch (GameException e) {
+                System.out.println("Ошибка: " + e.getMessage());
+                System.out.println("Попробуйте еще раз.\n");
+            }
+        }
+
+        System.out.println("----------------------------------------");
+        if (game.isWon()) {
+            System.out.println("Поздравляем! Вы отгадали слово!");
+        } else {
+            System.out.println("Ходы закончились! Вы проиграли.");
+        }
+        System.out.println("Загаданное слово было: " + game.getAnswer().toUpperCase());
+    }
 }
