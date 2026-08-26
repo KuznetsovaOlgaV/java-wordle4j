@@ -12,6 +12,7 @@ package ru.yandex.practicum;
 
 не забудьте про специальные типы исключений для игровых и неигровых ошибок
  */
+
 import ru.yandex.practicum.exceptions.*;
 
 import java.io.PrintWriter;
@@ -20,14 +21,13 @@ import java.util.*;
 public class WordleGame {
     public static final int MAX_STEPS = 6;
     public static final int WORD_LENGTH = 5;
+    public static final int RUSSIAN_ALPHABET_SIZE = 33;
 
     private final String answer;
     private final WordleDictionary dictionary;
     private final PrintWriter log;
-
     private int steps = 0;
     private boolean won = false;
-
     private final List<String> enteredWords = new ArrayList<>();
     private final List<String> cluesHistory = new ArrayList<>();
 
@@ -39,7 +39,6 @@ public class WordleGame {
         this.dictionary = Objects.requireNonNull(dictionary);
         this.answer = WordleDictionary.normalize(secretWord);
         this.log = log != null ? log : new PrintWriter(System.out);
-
         this.log.println("Новая игра создана. Загаданное слово: " + this.answer);
     }
 
@@ -64,7 +63,6 @@ public class WordleGame {
 
         steps++;
         String clue = calculateClue(this.answer, guess);
-
         enteredWords.add(guess);
         cluesHistory.add(clue);
 
@@ -80,7 +78,7 @@ public class WordleGame {
 
     public static String calculateClue(String secret, String guess) {
         char[] result = new char[WORD_LENGTH];
-        int[] letterCounts = new int[33]; // частота букв алфавита
+        int[] letterCounts = new int[RUSSIAN_ALPHABET_SIZE];
 
         for (int i = 0; i < WORD_LENGTH; i++) {
             char s = secret.charAt(i);
@@ -93,12 +91,12 @@ public class WordleGame {
         }
 
         for (int i = 0; i < WORD_LENGTH; i++) {
-            if (result[i] == '+') continue;
-
+            if (result[i] == '+') {
+                continue;
+            }
             char g = guess.charAt(i);
             int charIndex = g - 'а';
-
-            if (charIndex >= 0 && charIndex < 33 && letterCounts[charIndex] > 0) {
+            if (charIndex >= 0 && charIndex < letterCounts.length && letterCounts[charIndex] > 0) {
                 result[i] = '^';
                 letterCounts[charIndex]--;
             } else {

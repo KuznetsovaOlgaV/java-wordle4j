@@ -5,6 +5,10 @@ package ru.yandex.practicum;
     ему нужны методы по загрузке списка слов из файла по имени файла
     на выходе должен быть класс WordleDictionary
  */
+
+import ru.yandex.practicum.exceptions.DictionaryLoadException;
+import ru.yandex.practicum.exceptions.NoValidWordsException;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -15,7 +19,7 @@ import java.util.List;
 
 public class WordleDictionaryLoader {
 
-    public static WordleDictionary load(String filename, PrintWriter log) throws IOException {
+    public static WordleDictionary load(String filename, PrintWriter log) {
         log.println("Загрузка словаря из файла: " + filename);
         List<String> fiveLetterWords = new ArrayList<>();
 
@@ -23,17 +27,17 @@ public class WordleDictionaryLoader {
             String line;
             while ((line = reader.readLine()) != null) {
                 String normalized = WordleDictionary.normalize(line);
-                  if (normalized.length() == 5 && normalized.matches("[а-я]+")) {
+                if (normalized.length() == 5 && normalized.matches("[а-я]+")) {
                     fiveLetterWords.add(normalized);
                 }
             }
         } catch (IOException e) {
             log.println("Ошибка при чтении файла словаря: " + e.getMessage());
-            throw e;
+            throw new DictionaryLoadException("Не удалось прочитать файл словаря: " + filename, e);
         }
 
         if (fiveLetterWords.isEmpty()) {
-            throw new IllegalStateException("В файле " + filename + " не найдено подходящих 5-буквенных слов.");
+            throw new NoValidWordsException("В файле " + filename + " не найдено подходящих 5-буквенных слов.");
         }
 
         log.println("Словарь успешно загружен. Доступно слов для игры: " + fiveLetterWords.size());

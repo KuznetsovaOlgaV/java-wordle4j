@@ -5,12 +5,12 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.exceptions.*;
 
 import java.io.PrintWriter;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class WordleTest {
-
     private WordleDictionary dictionary;
     private PrintWriter log;
 
@@ -37,7 +37,6 @@ class WordleTest {
     void testMakeGuessSuccessWin() throws GameException {
         WordleGame game = new WordleGame(dictionary, "герой", log);
         String clue = game.makeGuess("герой");
-
         assertEquals("+++++", clue);
         assertTrue(game.isWon());
         assertTrue(game.isGameOver());
@@ -56,10 +55,20 @@ class WordleTest {
     }
 
     @Test
+    void testEmptyDictionaryException() {
+        WordleDictionary emptyDict = new WordleDictionary(Collections.emptyList());
+        assertThrows(EmptyDictionaryException.class, emptyDict::getRandomWord);
+    }
+
+    @Test
+    void testDictionaryLoaderFileNotFound() {
+        assertThrows(DictionaryLoadException.class, () -> WordleDictionaryLoader.load("non_existent_file.txt", log));
+    }
+
+    @Test
     void testHintGeneration() throws GameException {
         WordleGame game = new WordleGame(dictionary, "папка", log);
         game.makeGuess("шапка");
-
         String hint = game.getHint();
         assertEquals("папка", hint);
     }
@@ -67,12 +76,10 @@ class WordleTest {
     @Test
     void testAttemptsExhausted() throws GameException {
         WordleGame game = new WordleGame(dictionary, "герой", log);
-
         for (int i = 0; i < 6; i++) {
             assertFalse(game.isGameOver());
             game.makeGuess("поезд");
         }
-
         assertTrue(game.isGameOver());
         assertFalse(game.isWon());
     }

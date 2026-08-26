@@ -9,6 +9,7 @@ package ru.yandex.practicum;
     вызвать игровой метод в котором в цикле опрашивать пользователя и передавать информацию в игру
     вывести состояние игры и конечный результат
  */
+
 import ru.yandex.practicum.exceptions.GameException;
 
 import java.io.FileWriter;
@@ -26,19 +27,12 @@ public class Wordle {
         try (PrintWriter log = new PrintWriter(new FileWriter(logFileName, StandardCharsets.UTF_8, true), true)) {
             log.println("=== Запуск новой сессии Wordle ===");
 
-            WordleDictionary dictionary;
-            try {
-                dictionary = WordleDictionaryLoader.load(dictFileName, log);
-            } catch (IOException e) {
-                System.out.println("Критическая ошибка: Не удалось загрузить файл словаря '" + dictFileName + "'.");
-                return;
-            }
-
+            WordleDictionary dictionary = WordleDictionaryLoader.load(dictFileName, log);
             WordleGame game = new WordleGame(dictionary, log);
-            playGame(game, new Scanner(System.in));
 
+            playGame(game, new Scanner(System.in));
         } catch (Exception e) {
-            System.out.println("Произошла непредвиденная системная ошибка. Подробности записаны в лог.");
+            System.out.println("Произошла критическая ошибка приложения. Подробности записаны в лог: " + logFileName);
             e.printStackTrace();
         }
     }
@@ -50,7 +44,9 @@ public class Wordle {
 
         while (!game.isGameOver()) {
             System.out.printf("Попытка (%d/%d). Введите слово: ",
-                    (WordleGame.MAX_STEPS - game.getRemainingSteps() + 1), WordleGame.MAX_STEPS);
+                    (WordleGame.MAX_STEPS - game.getRemainingSteps() + 1),
+                    WordleGame.MAX_STEPS);
+
             String input = scanner.nextLine().trim();
 
             if (input.isEmpty()) {

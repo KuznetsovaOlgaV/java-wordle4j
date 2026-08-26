@@ -1,5 +1,7 @@
 package ru.yandex.practicum;
 
+import ru.yandex.practicum.exceptions.EmptyDictionaryException;
+
 import java.util.*;
 
 /*
@@ -18,13 +20,15 @@ public class WordleDictionary {
     }
 
     public boolean contains(String word) {
-        if (word == null) return false;
+        if (word == null) {
+            return false;
+        }
         return wordsSet.contains(normalize(word));
     }
 
     public String getRandomWord() {
         if (words.isEmpty()) {
-            throw new IllegalStateException("Словарь пуст");
+            throw new EmptyDictionaryException("Словарь пуст. Невозможно выбрать случайное слово.");
         }
         return words.get(random.nextInt(words.size()));
     }
@@ -38,7 +42,9 @@ public class WordleDictionary {
     }
 
     public static String normalize(String word) {
-        if (word == null) return "";
+        if (word == null) {
+            return "";
+        }
         return word.trim().toLowerCase().replace('ё', 'е');
     }
 }
